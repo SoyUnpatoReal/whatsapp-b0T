@@ -5,14 +5,14 @@ downloadMediaMessage
 } = require("@whiskeysockets/baileys")
 
 const P = require("pino")
-const qrcode = require("qrcode-terminal")
 const fs = require("fs")
 const axios = require("axios")
 const yts = require("yt-search")
 const ytdl = require("ytdl-core")
 const sharp = require("sharp")
 
-// SERVIDOR WEB 24/7
+// ================= EXPRESS =================
+
 const express = require("express")
 const app = express()
 
@@ -24,7 +24,8 @@ app.listen(3000, ()=>{
 console.log("Servidor web activo")
 })
 
-// CONFIG
+// ================= CONFIG =================
+
 const admins = [
 "521TU_NUMERO@s.whatsapp.net"
 ]
@@ -32,35 +33,65 @@ const admins = [
 let xp = {}
 let spam = {}
 
+// ================= BOT =================
+
 async function startBot(){
 
 const { state, saveCreds } =
 await useMultiFileAuthState("./auth")
 
 const sock = makeWASocket({
-logger: P({ level: "silent" }),
-auth: state
+
+printQRInTerminal: true,
+
+logger: P({
+level: "silent"
+}),
+
+auth: state,
+
+browser: [
+"Chrome",
+"Desktop",
+"1.0.0"
+]
+
 })
 
-sock.ev.on("creds.update", saveCreds)
+sock.ev.on(
+"creds.update",
+saveCreds
+)
 
-// QR
+// ================= QR =================
 
-sock.ev.on("connection.update", ({ connection, qr })=>{
+sock.ev.on(
+"connection.update",
+({ connection, qr })=>{
 
 if(qr){
-qrcode.generate(qr, { small: true })
+
+console.log("ESCANEA ESTE QR:")
+console.log(
+"https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=" + encodeURIComponent(qr)
+)
+
 }
 
 if(connection === "open"){
+
 console.log("BOT ONLINE")
+
 }
 
-})
+}
+)
 
-// BIENVENIDAS
+// ================= BIENVENIDAS =================
 
-sock.ev.on("group-participants.update", async(data)=>{
+sock.ev.on(
+"group-participants.update",
+async(data)=>{
 
 const group = data.id
 const users = data.participants
@@ -78,11 +109,14 @@ mentions:[user]
 
 }
 
-})
+}
+)
 
-// MENSAJES
+// ================= MENSAJES =================
 
-sock.ev.on("messages.upsert", async({ messages })=>{
+sock.ev.on(
+"messages.upsert",
+async({ messages })=>{
 
 const msg = messages[0]
 
@@ -98,10 +132,12 @@ msg.message.conversation ||
 msg.message.extendedTextMessage?.text ||
 ""
 
-// ANTI SPAM
+// ================= ANTI SPAM =================
 
 if(!spam[sender]){
-spam[sender] = { messages:0 }
+spam[sender] = {
+messages:0
+}
 }
 
 spam[sender].messages++
@@ -119,7 +155,7 @@ setTimeout(()=>{
 spam[sender].messages = 0
 },5000)
 
-// XP
+// ================= XP =================
 
 if(!xp[sender]){
 xp[sender] = 0
@@ -127,7 +163,7 @@ xp[sender] = 0
 
 xp[sender] += 5
 
-// MENU
+// ================= MENU =================
 
 if(body === "!menu"){
 
@@ -153,7 +189,7 @@ text:`
 
 }
 
-// IA
+// ================= IA =================
 
 if(body.startsWith("!ia ")){
 
@@ -186,7 +222,7 @@ text:"❌ Error IA"
 
 }
 
-// MUSICA
+// ================= MUSICA =================
 
 if(body.startsWith("!play ")){
 
@@ -233,7 +269,7 @@ fs.unlinkSync(path)
 
 }
 
-// VIDEO
+// ================= VIDEO =================
 
 if(body.startsWith("!video ")){
 
@@ -278,7 +314,7 @@ fs.unlinkSync(path)
 
 }
 
-// STICKER
+// ================= STICKER =================
 
 if(
 body === "!sticker" &&
@@ -304,7 +340,7 @@ sticker: sticker
 
 }
 
-// XP
+// ================= XP =================
 
 if(body === "!xp"){
 
@@ -314,7 +350,7 @@ text:`⭐ XP: ${xp[sender]}`
 
 }
 
-// DADOS
+// ================= DADOS =================
 
 if(body === "!dados"){
 
@@ -327,7 +363,7 @@ text:`🎲 Salió: ${numero}`
 
 }
 
-// MEME
+// ================= MEME =================
 
 if(body === "!meme"){
 
@@ -347,7 +383,7 @@ text: random
 
 }
 
-// FRASE
+// ================= FRASE =================
 
 if(body === "!frase"){
 
@@ -367,7 +403,7 @@ text: frase
 
 }
 
-// TRADUCIR
+// ================= TRADUCIR =================
 
 if(body.startsWith("!traducir ")){
 
@@ -400,39 +436,8 @@ text:"❌ Error traducción"
 
 }
 
-// TIKTOK
-
-if(body.startsWith("!tiktok ")){
-
-const url =
-body.replace("!tiktok ","")
-
-try{
-
-const api =
-await axios.get(
-`https://tikwm.com/api/?url=${url}`
+}
 )
-
-const video =
-api.data.data.play
-
-await sock.sendMessage(from,{
-video:{ url: video },
-caption:"TikTok descargado"
-})
-
-}catch{
-
-await sock.sendMessage(from,{
-text:"❌ Error TikTok"
-})
-
-}
-
-}
-
-})
 
 }
 
