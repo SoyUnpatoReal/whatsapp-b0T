@@ -41,7 +41,7 @@ let spam = {}
 async function startBot(){
 
 const { state, saveCreds } =
-await useMultiFileAuthState("./auth")
+await useMultiFileAuthState("./auth2")
 
 const sock = makeWASocket({
 
