@@ -33,7 +33,7 @@ console.log("WEB ONLINE")
 const phoneNumber = "525637748363"
 
 const admins = [
-"521TU_NUMERO@s.whatsapp.net"
+"525637748363.whatsapp.net"
 ]
 
 let xp = {}
