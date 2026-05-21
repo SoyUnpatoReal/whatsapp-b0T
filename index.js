@@ -12,6 +12,19 @@ const yts = require("yt-search")
 const ytdl = require("ytdl-core")
 const sharp = require("sharp")
 
+// SERVIDOR WEB 24/7
+const express = require("express")
+const app = express()
+
+app.get("/", (req,res)=>{
+res.send("BOT ONLINE 24/7")
+})
+
+app.listen(3000, ()=>{
+console.log("Servidor web activo")
+})
+
+// CONFIG
 const admins = [
 "521TU_NUMERO@s.whatsapp.net"
 ]
@@ -31,7 +44,7 @@ auth: state
 
 sock.ev.on("creds.update", saveCreds)
 
-// ================= QR =================
+// QR
 
 sock.ev.on("connection.update", ({ connection, qr })=>{
 
@@ -40,12 +53,12 @@ qrcode.generate(qr, { small: true })
 }
 
 if(connection === "open"){
-console.log("BOT ONLINE 24/7")
+console.log("BOT ONLINE")
 }
 
 })
 
-// ================= BIENVENIDAS =================
+// BIENVENIDAS
 
 sock.ev.on("group-participants.update", async(data)=>{
 
@@ -67,7 +80,7 @@ mentions:[user]
 
 })
 
-// ================= MENSAJES =================
+// MENSAJES
 
 sock.ev.on("messages.upsert", async({ messages })=>{
 
@@ -85,7 +98,7 @@ msg.message.conversation ||
 msg.message.extendedTextMessage?.text ||
 ""
 
-// ================= ANTI SPAM =================
+// ANTI SPAM
 
 if(!spam[sender]){
 spam[sender] = { messages:0 }
@@ -106,7 +119,7 @@ setTimeout(()=>{
 spam[sender].messages = 0
 },5000)
 
-// ================= XP =================
+// XP
 
 if(!xp[sender]){
 xp[sender] = 0
@@ -114,7 +127,7 @@ xp[sender] = 0
 
 xp[sender] += 5
 
-// ================= MENU =================
+// MENU
 
 if(body === "!menu"){
 
@@ -140,7 +153,7 @@ text:`
 
 }
 
-// ================= IA =================
+// IA
 
 if(body.startsWith("!ia ")){
 
@@ -173,7 +186,7 @@ text:"❌ Error IA"
 
 }
 
-// ================= MUSICA =================
+// MUSICA
 
 if(body.startsWith("!play ")){
 
@@ -220,7 +233,7 @@ fs.unlinkSync(path)
 
 }
 
-// ================= VIDEO =================
+// VIDEO
 
 if(body.startsWith("!video ")){
 
@@ -265,7 +278,7 @@ fs.unlinkSync(path)
 
 }
 
-// ================= STICKER =================
+// STICKER
 
 if(
 body === "!sticker" &&
@@ -291,7 +304,7 @@ sticker: sticker
 
 }
 
-// ================= XP =================
+// XP
 
 if(body === "!xp"){
 
@@ -301,7 +314,7 @@ text:`⭐ XP: ${xp[sender]}`
 
 }
 
-// ================= DADOS =================
+// DADOS
 
 if(body === "!dados"){
 
@@ -314,15 +327,15 @@ text:`🎲 Salió: ${numero}`
 
 }
 
-// ================= MEMES =================
+// MEME
 
 if(body === "!meme"){
 
 const memes = [
 "😂 Yo programando a las 3 AM",
-"💀 Cuando el código funciona y no sabes por qué",
+"💀 Cuando funciona y no sabes por qué",
 "🔥 GitHub salvando vidas",
-"🤡 Error en la línea 1"
+"🤡 Error en línea 1"
 ]
 
 const random =
@@ -334,15 +347,15 @@ text: random
 
 }
 
-// ================= FRASES =================
+// FRASE
 
 if(body === "!frase"){
 
 const frases = [
 "💡 Nunca dejes de aprender",
-"🚀 El éxito llega con práctica",
-"🔥 Todo error enseña algo",
-"🧠 La disciplina supera la motivación"
+"🚀 Todo mejora con práctica",
+"🔥 Los errores enseñan",
+"🧠 La disciplina gana"
 ]
 
 const frase =
@@ -354,7 +367,7 @@ text: frase
 
 }
 
-// ================= TRADUCTOR =================
+// TRADUCIR
 
 if(body.startsWith("!traducir ")){
 
@@ -387,7 +400,7 @@ text:"❌ Error traducción"
 
 }
 
-// ================= TIKTOK =================
+// TIKTOK
 
 if(body.startsWith("!tiktok ")){
 
@@ -416,24 +429,6 @@ text:"❌ Error TikTok"
 })
 
 }
-
-}
-
-// ================= ADMIN =================
-
-if(body === "!admin"){
-
-if(!admins.includes(sender)){
-
-return sock.sendMessage(from,{
-text:"❌ No eres admin"
-})
-
-}
-
-await sock.sendMessage(from,{
-text:"👑 Admin detectado"
-})
 
 }
 
