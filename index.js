@@ -24,10 +24,13 @@ res.send("BOT ONLINE 24/7")
 })
 
 app.listen(3000, ()=>{
-console.log("Servidor web activo")
+console.log("WEB ONLINE")
 })
 
 // ================= CONFIG =================
+
+// CAMBIA POR TU NUMERO
+const phoneNumber = "525637748363"
 
 const admins = [
 "521TU_NUMERO@s.whatsapp.net"
@@ -35,25 +38,23 @@ const admins = [
 
 let xp = {}
 let spam = {}
-
+      
 // ================= BOT =================
 
 async function startBot(){
 
 const { state, saveCreds } =
-await useMultiFileAuthState("./auth2")
+await useMultiFileAuthState("./auth_info")
 
 const sock = makeWASocket({
 
-printQRInTerminal: true,
-
-logger: P({
-level: "silent"
-}),
-
 auth: state,
 
-browser: [
+logger: P({
+level:"silent"
+}),
+
+browser:[
 "Chrome",
 "Desktop",
 "1.0.0"
@@ -66,49 +67,30 @@ sock.ev.on(
 saveCreds
 )
 
-// ================= QR =================
+// ================= VINCULACION =================
+
+if(!sock.authState.creds.registered){
+
+const code =
+await sock.requestPairingCode(phoneNumber)
+
+console.log(`
+========================
+CODIGO DE VINCULACION
+${code}
+========================
+`)
+}
+
+// ================= CONEXION =================
 
 sock.ev.on(
 "connection.update",
-({ connection, qr })=>{
-
-if(qr){
-
-console.log("ESCANEA ESTE QR:")
-console.log(
-"https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=" + encodeURIComponent(qr)
-)
-
-}
+({ connection })=>{
 
 if(connection === "open"){
 
-console.log("BOT ONLINE")
-
-}
-
-}
-)
-
-// ================= BIENVENIDAS =================
-
-sock.ev.on(
-"group-participants.update",
-async(data)=>{
-
-const group = data.id
-const users = data.participants
-
-for(let user of users){
-
-if(data.action === "add"){
-
-await sock.sendMessage(group,{
-text:`👋 Bienvenido @${user.split("@")[0]}`,
-mentions:[user]
-})
-
-}
+console.log("BOT ONLINE ✅")
 
 }
 
