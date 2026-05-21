@@ -1,7 +1,6 @@
 const {
 default: makeWASocket,
-useMultiFileAuthState,
-downloadMediaMessage
+useMultiFileAuthState
 } = require("@whiskeysockets/baileys")
 
 const P = require("pino")
@@ -9,9 +8,13 @@ const fs = require("fs")
 const axios = require("axios")
 const yts = require("yt-search")
 const ytdl = require("ytdl-core")
-const sharp = require("sharp")
 
-// ================= EXPRESS =================
+const {
+Sticker,
+StickerTypes
+} = require("wa-sticker-formatter")
+
+// ================= SERVIDOR WEB =================
 
 const express = require("express")
 const app = express()
@@ -180,7 +183,6 @@ text:`
 😂 !meme
 🌎 !traducir texto
 🧠 !frase
-📥 !tiktok link
 👑 !admin
 
 ╚═════════════════╝
@@ -321,22 +323,36 @@ body === "!sticker" &&
 msg.message.imageMessage
 ){
 
-const buffer =
-await downloadMediaMessage(
-msg,
-"buffer",
-{},
-{}
-)
+try{
 
-const sticker =
-await sharp(buffer)
-.webp()
-.toBuffer()
+const buffer =
+await sock.downloadMediaMessage(msg)
+
+const sticker = new Sticker(buffer, {
+
+pack: "Bot",
+author: "Erik",
+
+type: StickerTypes.FULL,
+
+quality: 70
+
+})
+
+const stickerBuffer =
+await sticker.toBuffer()
+
+await sock.sendMessage(from, {
+sticker: stickerBuffer
+})
+
+}catch{
 
 await sock.sendMessage(from,{
-sticker: sticker
+text:"❌ Error creando sticker"
 })
+
+}
 
 }
 
@@ -363,7 +379,7 @@ text:`🎲 Salió: ${numero}`
 
 }
 
-// ================= MEME =================
+// ================= MEMES =================
 
 if(body === "!meme"){
 
@@ -383,7 +399,7 @@ text: random
 
 }
 
-// ================= FRASE =================
+// ================= FRASES =================
 
 if(body === "!frase"){
 
@@ -433,6 +449,24 @@ text:"❌ Error traducción"
 })
 
 }
+
+}
+
+// ================= ADMIN =================
+
+if(body === "!admin"){
+
+if(!admins.includes(sender)){
+
+return sock.sendMessage(from,{
+text:"❌ No eres admin"
+})
+
+}
+
+await sock.sendMessage(from,{
+text:"👑 Admin detectado"
+})
 
 }
 
